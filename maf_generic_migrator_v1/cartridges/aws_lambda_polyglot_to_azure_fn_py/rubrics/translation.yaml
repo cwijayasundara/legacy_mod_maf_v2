@@ -1,0 +1,29 @@
+id: aws_lambda_to_azure_fn_py.translation
+description: Translator output quality rubric
+thresholds:
+  pass: 0.75
+rows:
+  - id: contract_preserved
+    description: Inputs, outputs, and side-effects match the original Lambda contract
+    weight: 0.25
+    scorer: maf_generic_migrator_v1.cartridges.aws_lambda_polyglot_to_azure_fn_py.scorers.contract_preserved
+  - id: sdk_replaced
+    description: Every AWS SDK call is replaced by an Azure SDK equivalent
+    weight: 0.25
+    scorer: maf_generic_migrator_v1.cartridges.aws_lambda_polyglot_to_azure_fn_py.scorers.sdk_replaced
+  - id: handler_shape
+    description: Uses Azure Functions v2 Python programming model correctly
+    weight: 0.15
+    scorer: maf_generic_migrator_v1.cartridges.aws_lambda_polyglot_to_azure_fn_py.scorers.handler_shape
+  - id: tests_parity
+    description: Unit tests compile and cover the original test cases
+    weight: 0.15
+    scorer: maf_generic_migrator_v1.cartridges.aws_lambda_polyglot_to_azure_fn_py.scorers.tests_parity
+  - id: auth_managed_identity
+    description: Uses DefaultAzureCredential; no secrets/keys in code
+    weight: 0.1
+    scorer: maf_generic_migrator_v1.cartridges.aws_lambda_polyglot_to_azure_fn_py.scorers.auth_managed_identity
+  - id: idiomatic_python
+    description: Output is idiomatic Python, not a transliteration
+    weight: 0.1
+    scorer: maf_generic_migrator_v1.cartridges.aws_lambda_polyglot_to_azure_fn_py.scorers.idiomatic_python

@@ -1,0 +1,52 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. PAYROLL.
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT PAYROLL-FILE ASSIGN TO DDPAYIN.
+           SELECT OUTPUT-FILE  ASSIGN TO DDPAYOUT.
+       DATA DIVISION.
+       FILE SECTION.
+       FD  PAYROLL-FILE.
+       01  PAYROLL-REC.
+           05  EMP-ID          PIC X(6).
+           05  EMP-HOURS       PIC 9(3)V99.
+           05  EMP-RATE        PIC 9(3)V99 COMP-3.
+       FD  OUTPUT-FILE.
+       01  OUTPUT-REC.
+           05  OUT-EMP-ID      PIC X(6).
+           05  OUT-GROSS       PIC 9(5)V99.
+       WORKING-STORAGE SECTION.
+       01  WS-GROSS            PIC 9(5)V99 VALUE ZERO.
+       01  WS-LIMIT            PIC 9(5)    VALUE 1000.
+       PROCEDURE DIVISION.
+       MAIN-SECTION SECTION.
+       OPEN-FILES.
+           OPEN INPUT PAYROLL-FILE
+           OPEN OUTPUT OUTPUT-FILE.
+       PROCESS-RECORDS.
+           READ PAYROLL-FILE
+               AT END PERFORM CLOSE-FILES
+           END-READ.
+           PERFORM COMPUTE-GROSS.
+           IF WS-GROSS > WS-LIMIT
+               PERFORM OVERTIME-BONUS
+           END-IF.
+           PERFORM EMIT-ROW.
+       COMPUTE-GROSS.
+           MULTIPLY EMP-HOURS BY EMP-RATE GIVING WS-GROSS.
+       OVERTIME-BONUS.
+           ADD 50 TO WS-GROSS.
+       WRITE-SECTION SECTION.
+       EMIT-ROW.
+           MOVE EMP-ID   TO OUT-EMP-ID.
+           MOVE WS-GROSS TO OUT-GROSS.
+           WRITE OUTPUT-REC.
+           CALL 'NOTIFYLIB' USING WS-GROSS.
+           EXEC SQL
+               INSERT INTO AUDIT VALUES (:EMP-ID, :WS-GROSS)
+           END-EXEC.
+       CLOSE-FILES.
+           CLOSE PAYROLL-FILE.
+           CLOSE OUTPUT-FILE.
+           STOP RUN.

@@ -1,0 +1,61 @@
+# Local Azure service emulators for wave-level verification.
+# Usage: docker compose -f docker-compose.emulators.yaml up -d
+#
+# Azurite covers Blob/Queue/Table storage.
+# Service Bus Emulator covers queues/topics (preview image — check latest tag).
+# Cosmos DB Emulator (Linux) covers NoSQL workloads (~2GB image).
+#
+# None of these are required for the platform to run; wave verification falls
+# back to soft-pass when emulators are absent.
+
+services:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: legacy-mod-azurite
+    ports:
+      - "10000:10000"   # Blob
+      - "10001:10001"   # Queue
+      - "10002:10002"   # Table
+    command: >
+      azurite
+      --blobHost 0.0.0.0
+      --queueHost 0.0.0.0
+      --tableHost 0.0.0.0
+      --skipApiVersionCheck
+    restart: unless-stopped
+
+  servicebus:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    container_name: legacy-mod-servicebus
+    ports:
+      - "5672:5672"     # AMQP
+      - "5300:5300"     # HTTP(S) management
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "ChangeMe_1234"
+      SQL_SERVER: servicebus-mssql
+    depends_on:
+      - servicebus-mssql
+
+  servicebus-mssql:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: legacy-mod-servicebus-mssql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "ChangeMe_1234"
+    ports:
+      - "1433:1433"
+
+  cosmos:
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+    container_name: legacy-mod-cosmos
+    ports:
+      - "8081:8081"
+      - "10251:10251"
+      - "10252:10252"
+      - "10253:10253"
+      - "10254:10254"
+      - "10255:10255"
+    environment:
+      AZURE_COSMOS_EMULATOR_PARTITION_COUNT: "3"
+      AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE: "true"

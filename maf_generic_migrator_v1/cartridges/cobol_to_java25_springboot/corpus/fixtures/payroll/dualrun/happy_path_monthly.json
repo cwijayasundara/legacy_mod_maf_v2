@@ -1,0 +1,23 @@
+{
+  "name": "happy-path-monthly",
+  "target_style": "batch",
+  "program_id": "PAYROLL",
+  "inputs": {
+    "EMP-ID": "E00042",
+    "EMP-HOURS": "40.00",
+    "EMP-RATE": "22.50"
+  },
+  "expected_outputs": {
+    "OUT-EMP-ID": "E00042",
+    "OUT-GROSS": "900.00"
+  },
+  "tolerances": {
+    "OUT-EMP-ID": {"kind": "picture", "pic": "X(6)"},
+    "OUT-GROSS":  {"kind": "picture", "pic": "9(5)V99"}
+  },
+  "metadata": {
+    "captured_from": "GnuCOBOL reference run",
+    "captured_at": "2026-04-22",
+    "notes": "40 hours * 22.50 = 900 — below WS-LIMIT(1000), no overtime bonus."
+  }
+}

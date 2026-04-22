@@ -1,0 +1,22 @@
+{
+  "name": "overtime-bonus-applies",
+  "target_style": "batch",
+  "program_id": "PAYROLL",
+  "inputs": {
+    "EMP-ID": "E00001",
+    "EMP-HOURS": "200.00",
+    "EMP-RATE": "25.00"
+  },
+  "expected_outputs": {
+    "OUT-EMP-ID": "E00001",
+    "OUT-GROSS": "5050.00"
+  },
+  "tolerances": {
+    "OUT-EMP-ID": {"kind": "picture", "pic": "X(6)"},
+    "OUT-GROSS":  {"kind": "picture", "pic": "9(5)V99"}
+  },
+  "metadata": {
+    "captured_from": "GnuCOBOL reference run",
+    "notes": "EMP-HOURS*EMP-RATE = 5000, crosses WS-LIMIT(1000) → +50 overtime bonus applied."
+  }
+}

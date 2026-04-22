@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Runtime: python3.11
+    MemorySize: 256
+    Timeout: 30
+
+Resources:
+
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: orders
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: orderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: orderId
+          KeyType: HASH
+
+  OrdersQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: orders
+
+  DownstreamQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: downstream
+
+  NotificationsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: notifications
+
+  InvoicesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: invoices
+
+  OrderProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: order_processor/
+      Handler: handler.lambda_handler
+      Environment:
+        Variables:
+          ORDERS_TABLE: orders
+          DOWNSTREAM_QUEUE_URL: !GetAtt DownstreamQueue.QueueUrl
+      Events:
+        FromOrdersQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt OrdersQueue.Arn
+
+  NotificationSender:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: notification_sender/
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Environment:
+        Variables:
+          TOPIC_ARN: !Ref NotificationsTopic
+      Events:
+        FromDownstream:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt DownstreamQueue.Arn
+
+  InvoiceGenerator:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: invoice_generator/
+      Runtime: java17
+      Handler: com.example.InvoiceHandler::handleRequest
+      Environment:
+        Variables:
+          INVOICES_BUCKET: invoices
+      Events:
+        FromDownstream:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt DownstreamQueue.Arn

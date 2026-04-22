@@ -1,0 +1,31 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+.env
+.env.*
+!.env.example
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.DS_Store
+.idea/
+.vscode/
+*.swp
+.workspace/
+.migration_runs/
+.checkpoints/
+azure_fn/
+azure_fn_migrated/
+# Real-LLM migration output (pilot/output/ snapshot is committed; migrated/ is not).
+pilot/output/migrated/
+out/
+.claude
+.github
+# External reference clones — users should `git clone` these separately.
+cobol_card_demo/

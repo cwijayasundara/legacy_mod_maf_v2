@@ -1,0 +1,77 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "legacy-mod-amf"
+version = "0.1.0"
+description = "Generic legacy modernization platform on Microsoft Agent Framework with pluggable migration cartridges"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "cwijayasundara" }]
+
+dependencies = [
+    "agent-framework==1.0.1",
+    "pydantic>=2.13",
+    "tree-sitter>=0.25",
+    "tree-sitter-language-pack>=1.6",
+    "libcst>=1.8",
+    "networkx>=3.4",
+    "typer>=0.15",
+    "rich>=13.9",
+    "pyyaml>=6.0.2",
+    "opentelemetry-api>=1.28",
+    "opentelemetry-sdk>=1.28",
+    "httpx>=0.28",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4",
+    "pytest-asyncio>=0.25",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "mypy>=1.14",
+]
+azure = [
+    "azure-identity>=1.21",
+    "azure-servicebus>=7.13",
+    "azure-cosmos>=4.9",
+    "azure-storage-blob>=12.24",
+    "azure-keyvault-secrets>=4.9",
+]
+openai = [
+    "openai>=1.60",
+]
+anthropic = [
+    "anthropic>=0.40",
+]
+
+[project.scripts]
+legacy-mod = "maf_generic_migrator_v1.platform_core.runtime.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "maf_generic_migrator_v1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q"
+asyncio_mode = "auto"
+testpaths = ["maf_generic_migrator_v1/tests", "maf_generic_migrator_v1/cartridges"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
