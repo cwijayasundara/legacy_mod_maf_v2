@@ -27,5 +27,3 @@ pilot/output/**/target/
 out/
 .claude
 .github
-# External reference clones — users should `git clone` these separately.
-cobol_card_demo/
