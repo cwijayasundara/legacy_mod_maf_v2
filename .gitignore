@@ -22,8 +22,8 @@ htmlcov/
 .checkpoints/
 azure_fn/
 azure_fn_migrated/
-# Real-LLM migration output (pilot/output/ snapshot is committed; migrated/ is not).
-pilot/output/migrated/
+# Maven build output inside generated cartridge modules — not a source artefact.
+pilot/output/**/target/
 out/
 .claude
 .github

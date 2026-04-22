@@ -1,0 +1,97 @@
+{
+  "run_id": "a3731b00baa5",
+  "cartridge_id": "cobol_to_java17_springboot",
+  "repo_root": "/Users/chamindawijayasundara/Documents/rnd_2026/legacy_mod_amf_v2/pilot/corpus",
+  "workdir": "/Users/chamindawijayasundara/Documents/rnd_2026/legacy_mod_amf_v2/pilot/output/migrated/cobol-pilot",
+  "started_at": "2026-04-22T19:01:23.597311+00:00",
+  "finished_at": "2026-04-22T19:06:21.312761+00:00",
+  "stage": "wave",
+  "budget": {
+    "max_usd": 5.0,
+    "used_usd": 0.498025,
+    "input_tokens": 90254,
+    "output_tokens": 27239,
+    "call_count": 17,
+    "halted": false,
+    "by_model": {
+      "gpt-5.4": {
+        "calls": 17,
+        "input_tokens": 90254,
+        "output_tokens": 27239,
+        "usd": 0.498025
+      }
+    },
+    "by_tag": {
+      "translator": 3,
+      "reviewer": 7,
+      "translator[1]": 2,
+      "security": 3,
+      "translator[2]": 2
+    }
+  },
+  "units": [
+    {
+      "unit_id": "CUSTINQ",
+      "wave": 1,
+      "status": "succeeded",
+      "cost_usd": 0.069455,
+      "tokens": {
+        "translator.input_tokens": 3622,
+        "translator.output_tokens": 3456,
+        "translator.total_tokens": 7078,
+        "reviewer.input_tokens": 5434,
+        "reviewer.output_tokens": 133,
+        "reviewer.total_tokens": 5567,
+        "security.input_tokens": 4066,
+        "security.output_tokens": 76,
+        "security.total_tokens": 4142
+      }
+    },
+    {
+      "unit_id": "INTCALC",
+      "wave": 1,
+      "status": "succeeded",
+      "cost_usd": 0.11801,
+      "tokens": {
+        "translator.input_tokens": 2790,
+        "translator.output_tokens": 1669,
+        "translator.total_tokens": 4459,
+        "reviewer.input_tokens": 12141,
+        "reviewer.output_tokens": 1192,
+        "reviewer.total_tokens": 13333,
+        "translator[1].input_tokens": 3124,
+        "translator[1].output_tokens": 1626,
+        "translator[1].total_tokens": 4750,
+        "translator[2].input_tokens": 3106,
+        "translator[2].output_tokens": 1373,
+        "translator[2].total_tokens": 4479,
+        "security.input_tokens": 2547,
+        "security.output_tokens": 14,
+        "security.total_tokens": 2561
+      }
+    },
+    {
+      "unit_id": "STMTGEN",
+      "wave": 2,
+      "status": "succeeded",
+      "cost_usd": 0.31056,
+      "tokens": {
+        "translator.input_tokens": 5319,
+        "translator.output_tokens": 5267,
+        "translator.total_tokens": 10586,
+        "reviewer.input_tokens": 27752,
+        "reviewer.output_tokens": 1430,
+        "reviewer.total_tokens": 29182,
+        "translator[1].input_tokens": 6013,
+        "translator[1].output_tokens": 5315,
+        "translator[1].total_tokens": 11328,
+        "translator[2].input_tokens": 5881,
+        "translator[2].output_tokens": 5623,
+        "translator[2].total_tokens": 11504,
+        "security.input_tokens": 8459,
+        "security.output_tokens": 65,
+        "security.total_tokens": 8524
+      }
+    }
+  ]
+}

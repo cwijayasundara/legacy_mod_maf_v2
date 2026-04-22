@@ -1,0 +1,22 @@
+spring:
+  batch:
+    job:
+      enabled: false
+  datasource:
+    url: jdbc:h2:mem:stmtgendb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+stmtgen:
+  input:
+    path: data/PROD.CUST.MASTER
+  output:
+    path: data/PROD.STMT.DAILY
+  period: "202401"

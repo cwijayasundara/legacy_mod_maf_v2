@@ -1,0 +1,565 @@
+{
+  "run_id": "a3731b00baa5",
+  "cartridge_id": "cobol_to_java17_springboot",
+  "repo_root": "/Users/chamindawijayasundara/Documents/rnd_2026/legacy_mod_amf_v2/pilot/corpus",
+  "workdir": "/Users/chamindawijayasundara/Documents/rnd_2026/legacy_mod_amf_v2/pilot/output/migrated/cobol-pilot",
+  "stage": "done",
+  "started_at": "2026-04-22T19:01:23.597311Z",
+  "updated_at": "2026-04-22T19:06:21.320268Z",
+  "inventory": {
+    "repo_root": "/Users/chamindawijayasundara/Documents/rnd_2026/legacy_mod_amf_v2/pilot/corpus",
+    "cartridge_id": "cobol_to_java17_springboot",
+    "units": [
+      {
+        "unit_id": "CUSTINQ",
+        "kind": "module",
+        "language": "cobol",
+        "language_version": null,
+        "root_path": "programs/CUSTINQ.cbl",
+        "handler_entry": "CUSTINQ:PROCEDURE DIVISION",
+        "files": [
+          "programs/CUSTINQ.cbl"
+        ],
+        "imports": [
+          {
+            "module": "CUSTREC",
+            "file": "programs/CUSTINQ.cbl",
+            "line": 6,
+            "is_external": false
+          }
+        ],
+        "service_calls": [
+          {
+            "service": "db2-exec-sql",
+            "operation": "SELECT",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 46
+          },
+          {
+            "service": "cics",
+            "operation": "RECEIVE",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 34
+          },
+          {
+            "service": "cics",
+            "operation": "SEND",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 69
+          },
+          {
+            "service": "cics",
+            "operation": "SEND",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 76
+          },
+          {
+            "service": "cics",
+            "operation": "SEND",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 81
+          },
+          {
+            "service": "cics",
+            "operation": "SEND",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 86
+          },
+          {
+            "service": "cics",
+            "operation": "RETURN",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 89
+          }
+        ],
+        "contract": {
+          "inputs": [],
+          "outputs": [],
+          "triggers": [],
+          "env_refs": [],
+          "notes": null
+        },
+        "loc": 98,
+        "byte_size": 3649,
+        "extra": {}
+      },
+      {
+        "unit_id": "INTCALC",
+        "kind": "module",
+        "language": "cobol",
+        "language_version": null,
+        "root_path": "programs/INTCALC.cbl",
+        "handler_entry": "INTCALC:PROCEDURE DIVISION",
+        "files": [
+          "programs/INTCALC.cbl"
+        ],
+        "imports": [],
+        "service_calls": [],
+        "contract": {
+          "inputs": [],
+          "outputs": [],
+          "triggers": [],
+          "env_refs": [],
+          "notes": null
+        },
+        "loc": 35,
+        "byte_size": 1292,
+        "extra": {}
+      },
+      {
+        "unit_id": "STMTGEN",
+        "kind": "module",
+        "language": "cobol",
+        "language_version": null,
+        "root_path": "programs/STMTGEN.cbl",
+        "handler_entry": "STMTGEN:PROCEDURE DIVISION",
+        "files": [
+          "programs/STMTGEN.cbl"
+        ],
+        "imports": [
+          {
+            "module": "CUSTREC",
+            "file": "programs/STMTGEN.cbl",
+            "line": 22,
+            "is_external": false
+          }
+        ],
+        "service_calls": [
+          {
+            "service": "cobol-call",
+            "operation": "INTCALC",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 67
+          },
+          {
+            "service": "db2-exec-sql",
+            "operation": "SELECT",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 60
+          },
+          {
+            "service": "db2-exec-sql",
+            "operation": "INSERT",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 78
+          },
+          {
+            "service": "vsam",
+            "operation": "read:?",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 60
+          },
+          {
+            "service": "vsam",
+            "operation": "write:STMT-REC",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 85
+          },
+          {
+            "service": "vsam",
+            "operation": "read:CUST-MASTER",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 92
+          }
+        ],
+        "contract": {
+          "inputs": [],
+          "outputs": [],
+          "triggers": [],
+          "env_refs": [],
+          "notes": null
+        },
+        "loc": 100,
+        "byte_size": 3904,
+        "extra": {}
+      }
+    ],
+    "scan_warnings": []
+  },
+  "graph": {
+    "units": [
+      "CUSTINQ",
+      "INTCALC",
+      "STMTGEN"
+    ],
+    "resources": [],
+    "edges": [
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": "INTCALC",
+        "target_resource": null,
+        "kind": "calls",
+        "evidence": "CALL 'INTCALC' — static KG edge",
+        "confidence": 1.0
+      }
+    ],
+    "ambiguous_edges": [
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:46 db2-exec-sql.SELECT (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:34 cics.RECEIVE (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:69 cics.SEND (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:76 cics.SEND (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:81 cics.SEND (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:86 cics.SEND (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:89 cics.RETURN (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:67 cobol-call.INTCALC (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:60 db2-exec-sql.SELECT (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:78 db2-exec-sql.INSERT (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:60 vsam.read:? (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:85 vsam.write:STMT-REC (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:92 vsam.read:CUST-MASTER (unresolved)",
+        "confidence": 0.3
+      }
+    ]
+  },
+  "backlog": {
+    "cartridge_id": "cobol_to_java17_springboot",
+    "waves": [
+      [
+        {
+          "unit_id": "CUSTINQ",
+          "cartridge_id": "cobol_to_java17_springboot",
+          "wave": 1,
+          "cluster_id": "CUSTINQ",
+          "source_paths": [
+            "programs/CUSTINQ.cbl"
+          ],
+          "context_paths": [],
+          "contract": {
+            "inputs": [],
+            "outputs": [],
+            "triggers": [],
+            "env_refs": [],
+            "notes": null
+          },
+          "complexity": "LOW",
+          "acceptance_criteria": "Migrate CUSTINQ preserving its public contract. Cross-unit edges: 0 inbound, 0 outbound. All unit tests must pass. No new deprecated APIs. Rubrics green.",
+          "facade_inbound": null,
+          "facade_outbound": null
+        },
+        {
+          "unit_id": "INTCALC",
+          "cartridge_id": "cobol_to_java17_springboot",
+          "wave": 1,
+          "cluster_id": "INTCALC",
+          "source_paths": [
+            "programs/INTCALC.cbl"
+          ],
+          "context_paths": [],
+          "contract": {
+            "inputs": [],
+            "outputs": [],
+            "triggers": [],
+            "env_refs": [],
+            "notes": null
+          },
+          "complexity": "MEDIUM",
+          "acceptance_criteria": "Migrate INTCALC preserving its public contract. Cross-unit edges: 1 inbound, 0 outbound. All unit tests must pass. No new deprecated APIs. Rubrics green.",
+          "facade_inbound": null,
+          "facade_outbound": null
+        }
+      ],
+      [
+        {
+          "unit_id": "STMTGEN",
+          "cartridge_id": "cobol_to_java17_springboot",
+          "wave": 2,
+          "cluster_id": "STMTGEN",
+          "source_paths": [
+            "programs/STMTGEN.cbl"
+          ],
+          "context_paths": [
+            "programs/INTCALC.cbl"
+          ],
+          "contract": {
+            "inputs": [],
+            "outputs": [],
+            "triggers": [],
+            "env_refs": [],
+            "notes": null
+          },
+          "complexity": "MEDIUM",
+          "acceptance_criteria": "Migrate STMTGEN preserving its public contract. Cross-unit edges: 0 inbound, 1 outbound. All unit tests must pass. No new deprecated APIs. Rubrics green.",
+          "facade_inbound": null,
+          "facade_outbound": null
+        }
+      ]
+    ]
+  },
+  "waves": [
+    {
+      "wave": 1,
+      "started_at": "2026-04-22T19:01:23.983801Z",
+      "finished_at": "2026-04-22T19:02:38.660870Z",
+      "items": [
+        {
+          "unit_id": "CUSTINQ",
+          "cartridge_id": "cobol_to_java17_springboot",
+          "wave": 1,
+          "cluster_id": "CUSTINQ",
+          "source_paths": [
+            "programs/CUSTINQ.cbl"
+          ],
+          "context_paths": [],
+          "contract": {
+            "inputs": [],
+            "outputs": [],
+            "triggers": [],
+            "env_refs": [],
+            "notes": null
+          },
+          "complexity": "LOW",
+          "acceptance_criteria": "Migrate CUSTINQ preserving its public contract. Cross-unit edges: 0 inbound, 0 outbound. All unit tests must pass. No new deprecated APIs. Rubrics green.",
+          "facade_inbound": null,
+          "facade_outbound": null
+        },
+        {
+          "unit_id": "INTCALC",
+          "cartridge_id": "cobol_to_java17_springboot",
+          "wave": 1,
+          "cluster_id": "INTCALC",
+          "source_paths": [
+            "programs/INTCALC.cbl"
+          ],
+          "context_paths": [],
+          "contract": {
+            "inputs": [],
+            "outputs": [],
+            "triggers": [],
+            "env_refs": [],
+            "notes": null
+          },
+          "complexity": "MEDIUM",
+          "acceptance_criteria": "Migrate INTCALC preserving its public contract. Cross-unit edges: 1 inbound, 0 outbound. All unit tests must pass. No new deprecated APIs. Rubrics green.",
+          "facade_inbound": null,
+          "facade_outbound": null
+        }
+      ],
+      "unit_results": [
+        {
+          "unit_id": "CUSTINQ",
+          "wave": 1,
+          "status": "succeeded",
+          "recipes_applied": [],
+          "tests_passed": true,
+          "reviewer_notes": "{\"verdict\":\"accept\",\"findings\":[{\"severity\":\"info\",\"rule\":\"missing-required-deliverable\",\"file\":\"README.md\",\"line\":1,\"message\":\"README.md is present but appears truncated/incomplete after the request body section.\"},{\"severity\":\"info\",\"rule\":\"linkage-signature-mismatch\",\"file\":\"src/main/java/com/example/custinq/service/CustinqService.java\",\"line\":17,\"message\":\"Service exposes a REST-oriented request DTO plus optional aid parameter rather than a COBOL-style PROCEDURE DIVISION USING linkage signature, which may be acceptable only if this unit is intended as a top-level transaction wrapper.\"}]}",
+          "reviewer_verdict": "accept",
+          "security_findings": [
+            "[medium] src/main/java/com/example/custinq/controller/CustinqController.java:16 REST endpoint POST /custinq is exposed without any Spring Security annotation or filter-chain protection visible in the module."
+          ],
+          "cost_usd": 0.069455,
+          "tokens": {
+            "translator.input_tokens": 3622,
+            "translator.output_tokens": 3456,
+            "translator.total_tokens": 7078,
+            "reviewer.input_tokens": 5434,
+            "reviewer.output_tokens": 133,
+            "reviewer.total_tokens": 5567,
+            "security.input_tokens": 4066,
+            "security.output_tokens": 76,
+            "security.total_tokens": 4142
+          },
+          "rubric_score": 0.0,
+          "error": null
+        },
+        {
+          "unit_id": "INTCALC",
+          "wave": 1,
+          "status": "succeeded",
+          "recipes_applied": [],
+          "tests_passed": true,
+          "reviewer_notes": "{\"verdict\":\"revise\",\"findings\":[{\"severity\":\"error\",\"rule\":\"linkage-signature-mismatch\",\"file\":\"src/main/java/com/example/intcalc/service/IntcalcService.java\",\"line\":14,\"message\":\"Public service method signature does not preserve the COBOL PROCEDURE DIVISION USING linkage as a single ordered record/object matching LNK-BALANCE, LNK-RATE, LNK-INTEREST, and LNK-STATUS.\"},{\"severity\":\"error\",\"rule\":\"linkage-signature-mismatch\",\"file\":\"src/main/java/com/example/intcalc/service/IntcalcService.java\",\"line\":17,\"message\":\"LNK-INTEREST is an output linkage item but is modeled as an input BigDecimal parameter and returned separately instead of being part of the callable linkage structure.\"},{\"severity\":\"error\",\"rule\":\"linkage-signature-mismatch\",\"file\":\"src/main/java/com/example/intcalc/service/IntcalcService.java\",\"line\":18,\"message\":\"LNK-STATUS in COBOL is a two-field linkage record with PIC X(1) and PIC X(30), but the service API uses a separate DTO outside the declared linkage wrapper and breaks the original USING contract.\"},{\"severity\":\"error\",\"rule\":\"linkage-signature-mismatch\",\"file\":\"src/main/java/com/example/intcalc/dto/IntcalcLinkage.java\",\"line\":21,\"message\":\"lnkMsg is constrained to 20 characters, but COBOL LNK-MSG is PIC X(30) and must allow up to 30 characters.\"},{\"severity\":\"error\",\"rule\":\"linkage-signature-mismatch\",\"file\":\"src/main/java/com/example/intcalc/dto/IntcalcLinkage.java\",\"line\":10,\"message\":\"lnkBalance is declared with 18 integer digits and 2 fractional digits, but COBOL LNK-BALANCE PIC S9(7)V99 allows 7 integer digits and 2 fractional digits.\"},{\"severity\":\"error\",\"rule\":\"linkage-signature-mismatch\",\"file\":\"src/main/java/com/example/intcalc/dto/IntcalcLinkage.java\",\"line\":14,\"message\":\"lnkRate is declared with 9 fractional digits, but COBOL LNK-RATE PIC 9(1)V999 allows 1 integer digit and 3 fractional digits.\"},{\"severity\":\"error\",\"rule\":\"linkage-signature-mismatch\",\"file\":\"src/main/java/com/example/intcalc/dto/IntcalcLinkage.java\",\"line\":17,\"message\":\"lnkInterest is declared with 18 integer digits and 9 fractional digits, but COBOL LNK-INTEREST PIC S9(7)V99 allows 7 integer digits and 2 fractional digits.\"}],\"suggested_fix\":\"Change the service to expose a single callable method that accepts and returns one IntcalcLinkage record matching the COBOL USING layout exactly, and correct IntcalcLinkage field sizes so balance/interest are S9(7)V99, rate is 9(1)V999, and lnkMsg is X(30).\"}",
+          "reviewer_verdict": "revise",
+          "security_findings": [],
+          "cost_usd": 0.11800999999999999,
+          "tokens": {
+            "translator.input_tokens": 2790,
+            "translator.output_tokens": 1669,
+            "translator.total_tokens": 4459,
+            "reviewer.input_tokens": 12141,
+            "reviewer.output_tokens": 1192,
+            "reviewer.total_tokens": 13333,
+            "translator[1].input_tokens": 3124,
+            "translator[1].output_tokens": 1626,
+            "translator[1].total_tokens": 4750,
+            "translator[2].input_tokens": 3106,
+            "translator[2].output_tokens": 1373,
+            "translator[2].total_tokens": 4479,
+            "security.input_tokens": 2547,
+            "security.output_tokens": 14,
+            "security.total_tokens": 2561
+          },
+          "rubric_score": 0.0,
+          "error": null
+        }
+      ],
+      "verification_passed": true
+    },
+    {
+      "wave": 2,
+      "started_at": "2026-04-22T19:02:38.662072Z",
+      "finished_at": "2026-04-22T19:06:21.312748Z",
+      "items": [
+        {
+          "unit_id": "STMTGEN",
+          "cartridge_id": "cobol_to_java17_springboot",
+          "wave": 2,
+          "cluster_id": "STMTGEN",
+          "source_paths": [
+            "programs/STMTGEN.cbl"
+          ],
+          "context_paths": [
+            "programs/INTCALC.cbl"
+          ],
+          "contract": {
+            "inputs": [],
+            "outputs": [],
+            "triggers": [],
+            "env_refs": [],
+            "notes": null
+          },
+          "complexity": "MEDIUM",
+          "acceptance_criteria": "Migrate STMTGEN preserving its public contract. Cross-unit edges: 0 inbound, 1 outbound. All unit tests must pass. No new deprecated APIs. Rubrics green.",
+          "facade_inbound": null,
+          "facade_outbound": null
+        }
+      ],
+      "unit_results": [
+        {
+          "unit_id": "STMTGEN",
+          "wave": 2,
+          "status": "succeeded",
+          "recipes_applied": [],
+          "tests_passed": true,
+          "reviewer_notes": "{\"verdict\":\"revise\",\"findings\":[{\"severity\":\"error\",\"rule\":\"broken-import\",\"file\":\"src/main/java/com/example/stmtgen/tasklet/ProcessCustomerTasklet.java\",\"line\":3,\"message\":\"Import uses com.example.intcalc.dto.IntcalcResult but this module defines intcalc types under com.example.stmtgen.intcalc and no matching external package is declared.\"},{\"severity\":\"error\",\"rule\":\"broken-import\",\"file\":\"src/main/java/com/example/stmtgen/tasklet/ProcessCustomerTasklet.java\",\"line\":4,\"message\":\"Import uses com.example.intcalc.dto.LnkStatus but this module defines LnkStatus under com.example.stmtgen.intcalc and no matching external package is declared.\"},{\"severity\":\"error\",\"rule\":\"broken-import\",\"file\":\"src/main/java/com/example/stmtgen/tasklet/ProcessCustomerTasklet.java\",\"line\":5,\"message\":\"Import uses com.example.intcalc.service.IntcalcService but this module defines IntcalcService under com.example.stmtgen.intcalc and no matching external package is declared.\"},{\"severity\":\"error\",\"rule\":\"duplicate-external-stub\",\"file\":\"src/main/java/com/example/stmtgen/intcalc/IntcalcService.java\",\"line\":9,\"message\":\"The module declares a local INTCALC service while pom.xml also adds an external com.example:intcalc dependency, creating duplicate representations of the same COBOL CALL target.\"},{\"severity\":\"error\",\"rule\":\"bigdecimal-no-rounding-mode\",\"file\":\"src/main/java/com/example/stmtgen/tasklet/ProcessCustomerTasklet.java\",\"line\":67,\"message\":\"Interest is rescaled with RoundingMode.UNNECESSARY even though COBOL COMPUTE for STM-TOTAL requires rounded decimal handling for a 2-decimal target field.\"}],\"suggested_fix\":\"Make STMTGEN use a single INTCALC contract consistently by switching ProcessCustomerTasklet to the emitted com.example.stmtgen.intcalc types (or removing the local stub and relying solely on the external dependency), and round 2-decimal monetary results with an explicit business rounding mode such as HALF_UP.\"}",
+          "reviewer_verdict": "revise",
+          "security_findings": [
+            "[medium] pom.xml:7 Spring Boot parent version 3.2.5 is older than the current LTS and should be upgraded for dependency security hygiene."
+          ],
+          "cost_usd": 0.31056000000000006,
+          "tokens": {
+            "translator.input_tokens": 5319,
+            "translator.output_tokens": 5267,
+            "translator.total_tokens": 10586,
+            "reviewer.input_tokens": 27752,
+            "reviewer.output_tokens": 1430,
+            "reviewer.total_tokens": 29182,
+            "translator[1].input_tokens": 6013,
+            "translator[1].output_tokens": 5315,
+            "translator[1].total_tokens": 11328,
+            "translator[2].input_tokens": 5881,
+            "translator[2].output_tokens": 5623,
+            "translator[2].total_tokens": 11504,
+            "security.input_tokens": 8459,
+            "security.output_tokens": 65,
+            "security.total_tokens": 8524
+          },
+          "rubric_score": 0.0,
+          "error": null
+        }
+      ],
+      "verification_passed": true
+    }
+  ]
+}

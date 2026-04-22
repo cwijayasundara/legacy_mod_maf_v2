@@ -1,0 +1,391 @@
+{
+  "run_id": "82143bb29891",
+  "cartridge_id": "cobol_to_java25_springboot",
+  "repo_root": "/Users/chamindawijayasundara/Documents/rnd_2026/legacy_mod_amf_v2/pilot/corpus",
+  "workdir": "/Users/chamindawijayasundara/Documents/rnd_2026/legacy_mod_amf_v2/pilot/output/migrated/cobol-pilot",
+  "stage": "done",
+  "started_at": "2026-04-22T20:30:23.951552Z",
+  "updated_at": "2026-04-22T20:30:23.973317Z",
+  "inventory": {
+    "repo_root": "/Users/chamindawijayasundara/Documents/rnd_2026/legacy_mod_amf_v2/pilot/corpus",
+    "cartridge_id": "cobol_to_java25_springboot",
+    "units": [
+      {
+        "unit_id": "CUSTINQ",
+        "kind": "module",
+        "language": "cobol",
+        "language_version": null,
+        "root_path": "programs/CUSTINQ.cbl",
+        "handler_entry": "CUSTINQ:PROCEDURE DIVISION",
+        "files": [
+          "programs/CUSTINQ.cbl"
+        ],
+        "imports": [
+          {
+            "module": "CUSTREC",
+            "file": "programs/CUSTINQ.cbl",
+            "line": 6,
+            "is_external": false
+          }
+        ],
+        "service_calls": [
+          {
+            "service": "db2-exec-sql",
+            "operation": "SELECT",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 46
+          },
+          {
+            "service": "cics",
+            "operation": "RECEIVE",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 34
+          },
+          {
+            "service": "cics",
+            "operation": "SEND",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 69
+          },
+          {
+            "service": "cics",
+            "operation": "SEND",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 76
+          },
+          {
+            "service": "cics",
+            "operation": "SEND",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 81
+          },
+          {
+            "service": "cics",
+            "operation": "SEND",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 86
+          },
+          {
+            "service": "cics",
+            "operation": "RETURN",
+            "resource": null,
+            "file": "programs/CUSTINQ.cbl",
+            "line": 89
+          }
+        ],
+        "contract": {
+          "inputs": [],
+          "outputs": [],
+          "triggers": [],
+          "env_refs": [],
+          "notes": null
+        },
+        "loc": 98,
+        "byte_size": 3649,
+        "extra": {}
+      },
+      {
+        "unit_id": "INTCALC",
+        "kind": "module",
+        "language": "cobol",
+        "language_version": null,
+        "root_path": "programs/INTCALC.cbl",
+        "handler_entry": "INTCALC:PROCEDURE DIVISION",
+        "files": [
+          "programs/INTCALC.cbl"
+        ],
+        "imports": [],
+        "service_calls": [],
+        "contract": {
+          "inputs": [],
+          "outputs": [],
+          "triggers": [],
+          "env_refs": [],
+          "notes": null
+        },
+        "loc": 35,
+        "byte_size": 1292,
+        "extra": {}
+      },
+      {
+        "unit_id": "STMTGEN",
+        "kind": "module",
+        "language": "cobol",
+        "language_version": null,
+        "root_path": "programs/STMTGEN.cbl",
+        "handler_entry": "STMTGEN:PROCEDURE DIVISION",
+        "files": [
+          "programs/STMTGEN.cbl"
+        ],
+        "imports": [
+          {
+            "module": "CUSTREC",
+            "file": "programs/STMTGEN.cbl",
+            "line": 22,
+            "is_external": false
+          }
+        ],
+        "service_calls": [
+          {
+            "service": "cobol-call",
+            "operation": "INTCALC",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 67
+          },
+          {
+            "service": "db2-exec-sql",
+            "operation": "SELECT",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 60
+          },
+          {
+            "service": "db2-exec-sql",
+            "operation": "INSERT",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 78
+          },
+          {
+            "service": "vsam",
+            "operation": "read:?",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 60
+          },
+          {
+            "service": "vsam",
+            "operation": "write:STMT-REC",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 85
+          },
+          {
+            "service": "vsam",
+            "operation": "read:CUST-MASTER",
+            "resource": null,
+            "file": "programs/STMTGEN.cbl",
+            "line": 92
+          }
+        ],
+        "contract": {
+          "inputs": [],
+          "outputs": [],
+          "triggers": [],
+          "env_refs": [],
+          "notes": null
+        },
+        "loc": 100,
+        "byte_size": 3904,
+        "extra": {}
+      }
+    ],
+    "scan_warnings": []
+  },
+  "graph": {
+    "units": [
+      "CUSTINQ",
+      "INTCALC",
+      "STMTGEN"
+    ],
+    "resources": [],
+    "edges": [
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": "INTCALC",
+        "target_resource": null,
+        "kind": "calls",
+        "evidence": "CALL 'INTCALC' — static KG edge",
+        "confidence": 1.0
+      }
+    ],
+    "ambiguous_edges": [
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:46 db2-exec-sql.SELECT (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:34 cics.RECEIVE (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:69 cics.SEND (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:76 cics.SEND (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:81 cics.SEND (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:86 cics.SEND (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "CUSTINQ",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/CUSTINQ.cbl:89 cics.RETURN (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:67 cobol-call.INTCALC (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:60 db2-exec-sql.SELECT (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:78 db2-exec-sql.INSERT (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:60 vsam.read:? (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:85 vsam.write:STMT-REC (unresolved)",
+        "confidence": 0.3
+      },
+      {
+        "source_unit": "STMTGEN",
+        "target_unit": null,
+        "target_resource": null,
+        "kind": "invokes",
+        "evidence": "programs/STMTGEN.cbl:92 vsam.read:CUST-MASTER (unresolved)",
+        "confidence": 0.3
+      }
+    ]
+  },
+  "backlog": {
+    "cartridge_id": "cobol_to_java25_springboot",
+    "waves": [
+      [
+        {
+          "unit_id": "CUSTINQ",
+          "cartridge_id": "cobol_to_java25_springboot",
+          "wave": 1,
+          "cluster_id": "CUSTINQ",
+          "source_paths": [
+            "programs/CUSTINQ.cbl"
+          ],
+          "context_paths": [],
+          "contract": {
+            "inputs": [],
+            "outputs": [],
+            "triggers": [],
+            "env_refs": [],
+            "notes": null
+          },
+          "complexity": "LOW",
+          "acceptance_criteria": "Migrate CUSTINQ preserving its public contract. Cross-unit edges: 0 inbound, 0 outbound. All unit tests must pass. No new deprecated APIs. Rubrics green.",
+          "facade_inbound": null,
+          "facade_outbound": null
+        },
+        {
+          "unit_id": "INTCALC",
+          "cartridge_id": "cobol_to_java25_springboot",
+          "wave": 1,
+          "cluster_id": "INTCALC",
+          "source_paths": [
+            "programs/INTCALC.cbl"
+          ],
+          "context_paths": [],
+          "contract": {
+            "inputs": [],
+            "outputs": [],
+            "triggers": [],
+            "env_refs": [],
+            "notes": null
+          },
+          "complexity": "MEDIUM",
+          "acceptance_criteria": "Migrate INTCALC preserving its public contract. Cross-unit edges: 1 inbound, 0 outbound. All unit tests must pass. No new deprecated APIs. Rubrics green.",
+          "facade_inbound": null,
+          "facade_outbound": null
+        }
+      ],
+      [
+        {
+          "unit_id": "STMTGEN",
+          "cartridge_id": "cobol_to_java25_springboot",
+          "wave": 2,
+          "cluster_id": "STMTGEN",
+          "source_paths": [
+            "programs/STMTGEN.cbl"
+          ],
+          "context_paths": [
+            "programs/INTCALC.cbl"
+          ],
+          "contract": {
+            "inputs": [],
+            "outputs": [],
+            "triggers": [],
+            "env_refs": [],
+            "notes": null
+          },
+          "complexity": "MEDIUM",
+          "acceptance_criteria": "Migrate STMTGEN preserving its public contract. Cross-unit edges: 0 inbound, 1 outbound. All unit tests must pass. No new deprecated APIs. Rubrics green.",
+          "facade_inbound": null,
+          "facade_outbound": null
+        }
+      ]
+    ]
+  },
+  "waves": []
+}

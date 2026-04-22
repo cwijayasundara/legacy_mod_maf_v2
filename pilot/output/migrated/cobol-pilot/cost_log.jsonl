@@ -1,0 +1,1 @@
+{"run_id": "a3731b00baa5", "finished_at": "2026-04-22T19:06:21.312761+00:00", "cartridge_id": "cobol_to_java17_springboot", "units": 3, "calls": 17, "input_tokens": 90254, "output_tokens": 27239, "used_usd": 0.498025, "max_usd": 5.0, "halted": false}
