@@ -9,10 +9,15 @@ from __future__ import annotations
 
 import ast
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from maf_generic_migrator_v1.platform_core.ir import Import, ServiceCall, UnitIR
 
+from ._kg_builder import build_kg_from_ir, python_function_paragraphs
 from .base import LanguageAdapter
+
+if TYPE_CHECKING:
+    from maf_generic_migrator_v1.platform_core.kg import KGStore
 
 _BOTO3_FACTORIES = {"client", "resource"}
 _NAME_KWARGS = {
@@ -68,6 +73,21 @@ class PythonAdapter(LanguageAdapter):
             service_calls=service_calls,
             loc=loc,
             byte_size=byte_size,
+        )
+
+    # ----------------------------------------------------------------- #
+    # KG path — projects the IR into program / external_call / dataset_ref
+    # nodes so the cartridge can run comprehension + render a business
+    # spec for the translator prompt. Paragraphs = top-level functions.
+    # ----------------------------------------------------------------- #
+
+    def extract_kg(self, repo_root: Path, unit_root: Path, store: "KGStore") -> None:
+        ir = self.extract_unit(repo_root, unit_root)
+        build_kg_from_ir(
+            ir,
+            store,
+            resolve_call=_default_aws_resolver(),
+            function_paragraphs=python_function_paragraphs(repo_root, ir),
         )
 
     # ----------------------------------------------------------------- #
@@ -312,3 +332,21 @@ def _guess_handler_entry(files: list[Path]) -> str | None:
         if name in by_name:
             return f"{by_name[name].name}:lambda_handler"
     return None
+
+
+def _default_aws_resolver():
+    """Lazy import of the AWS cartridge's SDK resolver.
+
+    Kept lazy so the generic Python adapter remains useful for non-AWS
+    cartridges. If the AWS cartridge isn't importable (Python2→3 style
+    pair, etc.) the KG builder silently falls back to emitting
+    ``external_call`` nodes without dataset edges — still useful for
+    comprehension.
+    """
+    try:
+        from maf_generic_migrator_v1.cartridges.aws_lambda_polyglot_to_azure_fn_py.aws_sdk_patterns import (
+            resolve,
+        )
+    except Exception:  # noqa: BLE001
+        return None
+    return resolve

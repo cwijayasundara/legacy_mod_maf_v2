@@ -8,11 +8,16 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from maf_generic_migrator_v1.platform_core.ir import Import, ServiceCall, UnitIR
 
+from ._kg_builder import build_kg_from_ir
 from ._tree_sitter_utils import find_nodes_by_type, line_of, node_text, parse
 from .base import LanguageAdapter
+
+if TYPE_CHECKING:
+    from maf_generic_migrator_v1.platform_core.kg import KGStore
 
 # --- Regex fallback (used when tree-sitter unavailable) ------------------- #
 _REQUIRE = re.compile(r"""(?m)^\s*(?:const|let|var)\s+(?:\{[^}]+\}|\w+)\s*=\s*require\(\s*['"]([^'"]+)['"]\s*\)""")
@@ -56,6 +61,10 @@ class NodeAdapter(LanguageAdapter):
             loc=loc,
             byte_size=byte_size,
         )
+
+    def extract_kg(self, repo_root: Path, unit_root: Path, store: "KGStore") -> None:
+        ir = self.extract_unit(repo_root, unit_root)
+        build_kg_from_ir(ir, store, resolve_call=_default_aws_resolver())
 
     # --- tree-sitter path ------------------------------------------------- #
 
@@ -194,3 +203,14 @@ def _guess_handler_entry(files: list[Path]) -> str | None:
 
 # Re-exports for TypeScript adapter reuse.
 _AWS_SDK_CLIENT = _AWS_CLIENT
+
+
+def _default_aws_resolver():
+    """Lazy import of the AWS cartridge's SDK resolver (see python.py)."""
+    try:
+        from maf_generic_migrator_v1.cartridges.aws_lambda_polyglot_to_azure_fn_py.aws_sdk_patterns import (
+            resolve,
+        )
+    except Exception:  # noqa: BLE001
+        return None
+    return resolve

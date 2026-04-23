@@ -22,6 +22,11 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Protocol
 
+from maf_generic_migrator_v1.platform_core.context.chunker import Chunk, chunk_file
+from maf_generic_migrator_v1.platform_core.context.token_estimator import (
+    DEFAULT_PROFILE,
+    estimate_tokens,
+)
 from maf_generic_migrator_v1.platform_core.kg import (
     EdgeKind,
     KGNode,
@@ -31,6 +36,49 @@ from maf_generic_migrator_v1.platform_core.kg import (
 )
 
 logger = logging.getLogger(__name__)
+
+#: Default ceiling for a single LLM call's input tokens. Leaves room for
+#: the system prompt + a reasonable response reservation on any 128k-class
+#: model (Sonnet 4.6 = 200k, gpt-5.4 = 128k). Any node whose rendered user
+#: message would exceed this falls into the chunk-and-reduce path.
+DEFAULT_INPUT_TOKEN_BUDGET = 80_000
+
+#: System prompt used for sub-node chunk summaries. Each chunk lives under
+#: one node (usually a paragraph or program) and its summary becomes a
+#: "virtual child" of the enclosing node's reduce prompt. Kept intentionally
+#: terse so the chunk summaries remain small and composable.
+_CHUNK_SYSTEM_PROMPT = (
+    "You are summarizing one chunk of a larger legacy source file. The\n"
+    "chunk was split at a natural language boundary (function / class /\n"
+    "section). Produce ONE tight paragraph (3-5 sentences) capturing:\n"
+    "\n"
+    "1. The behaviour this chunk implements — concrete business or\n"
+    "   technical effect, not control-flow mechanics.\n"
+    "2. Any named external resources it touches (tables, buckets,\n"
+    "   queues, datasets, SQL verbs, CICS commands).\n"
+    "3. Any pre- or post-conditions the code enforces.\n"
+    "\n"
+    "Do NOT describe the surrounding file or other chunks. Do NOT\n"
+    "include code. Plain prose only.\n"
+)
+_CHUNK_PROMPT_HASH = hashlib.sha256(
+    _CHUNK_SYSTEM_PROMPT.encode("utf-8")
+).hexdigest()[:16]
+
+_LANG_BY_SUFFIX = {
+    ".py": "python",
+    ".js": "node",
+    ".mjs": "node",
+    ".cjs": "node",
+    ".ts": "typescript",
+    ".tsx": "typescript",
+    ".java": "java",
+    ".cs": "csharp",
+    ".go": "go",
+    ".cbl": "cobol",
+    ".cob": "cobol",
+    ".cobol": "cobol",
+}
 
 
 # --------------------------------------------------------------------------- #
@@ -77,6 +125,19 @@ class SummaryCache:
         digest = hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
         return f"{node.id}:{digest}:{prompt_hash}"
 
+    @staticmethod
+    def chunk_key(node_id: str, chunk: Chunk, prompt_hash: str) -> str:
+        """Cache key for a single sub-node chunk.
+
+        Keyed on ``(node_id, chunk content hash, prompt hash)`` so that
+        editing one chunk of an oversized paragraph re-summarizes only
+        that chunk — the rest stay cached. Cheaper than rehashing the
+        whole raw_text per chunk.
+        """
+        content = f"{chunk.start_line}:{chunk.end_line}:{chunk.content}"
+        digest = hashlib.sha256(content.encode("utf-8")).hexdigest()[:16]
+        return f"{node_id}#chunk{chunk.index}:{digest}:{prompt_hash}"
+
     def get(self, key: str) -> str | None:
         return self._entries.get(key)
 
@@ -110,6 +171,7 @@ class Summarizer:
         prompts_dir: Path | Sequence[Path],
         cache: SummaryCache | None = None,
         traverse_edges: tuple[EdgeKind, ...] = ("contains",),
+        input_token_budget: int = DEFAULT_INPUT_TOKEN_BUDGET,
     ) -> None:
         """``prompts_dir`` accepts a single ``Path`` or a sequence of them.
 
@@ -117,6 +179,13 @@ class Summarizer:
         platform defaults by placing ``<kind>.md`` in a dir listed before
         the platform defaults in the sequence. Resolution still falls back
         to ``default.md`` if no ``<kind>.md`` is found in any dir.
+
+        ``input_token_budget`` is the per-call input-token ceiling. When
+        a node's rendered user message would exceed it, the summarizer
+        splits the node's ``raw_text`` at semantic boundaries, summarizes
+        each chunk, then reduces the chunk summaries with the node's
+        kind-specific prompt. This is what lets comprehension run against
+        40k-LOC files without busting model context.
         """
         self._client = chat_client
         if isinstance(prompts_dir, Path):
@@ -128,6 +197,7 @@ class Summarizer:
         self._cache = cache or SummaryCache(cache_path=None)
         self._traverse_edges = traverse_edges
         self._prompt_cache: dict[str, tuple[str, str]] = {}  # kind -> (text, hash)
+        self._input_token_budget = input_token_budget
 
     async def summarize(
         self,
@@ -198,6 +268,23 @@ class Summarizer:
             return 0
 
         user_msg = self._build_user_message(store, node)
+
+        # Oversized + has raw_text to chunk → route to chunk-and-reduce.
+        # Nodes without raw_text (parents that already rely on child
+        # summaries) are sent as-is — the oversize must come from
+        # rolled-up child summaries, which the caller should have
+        # already budgeted for.
+        over_budget = estimate_tokens(user_msg) > self._input_token_budget
+        if over_budget and node.raw_text:
+            return await self._summarize_via_chunks(
+                store, node, prompt_text, prompt_hash, cache_key,
+            )
+        if over_budget:
+            logger.warning(
+                "summarizer: node %s over budget but has no raw_text to chunk (%d tok) — sending as-is",
+                node.id, estimate_tokens(user_msg),
+            )
+
         try:
             summary = await self._client.chat(system=prompt_text, user=user_msg)
         except Exception as exc:  # noqa: BLE001 — one bad node must not kill the pass
@@ -208,6 +295,158 @@ class Summarizer:
         store.update_node(node.id, llm_summary=summary)
         self._cache.put(cache_key, summary)
         return 1
+
+    async def _summarize_via_chunks(
+        self,
+        store: KGStore,
+        node: KGNode,
+        prompt_text: str,
+        prompt_hash: str,
+        cache_key: str,
+    ) -> int:
+        """Map-reduce over sub-node chunks when ``node.raw_text`` is too big.
+
+        1. Split ``raw_text`` at semantic boundaries via ``chunk_file``.
+        2. Summarize each chunk (cache-keyed per chunk) with a chunk-level
+           system prompt.
+        3. Re-invoke the node's kind prompt with the chunk summaries in
+           place of raw source — this produces the node's canonical
+           ``llm_summary`` and mirrors exactly what the parent-level
+           reduce step already does for non-oversize nodes.
+        """
+        language = self._language_of(node)
+        chunks = chunk_file(node.raw_text or "", language=language)
+        logger.info(
+            "summarizer: chunking %s (%d chars, %d tok est) → %d chunks",
+            node.id, len(node.raw_text or ""),
+            estimate_tokens(node.raw_text or ""), len(chunks),
+        )
+
+        chunk_summaries: list[tuple[Chunk, str]] = []
+        for chunk in chunks:
+            ckey = SummaryCache.chunk_key(node.id, chunk, _CHUNK_PROMPT_HASH)
+            cached = self._cache.get(ckey)
+            if cached is not None:
+                chunk_summaries.append((chunk, cached))
+                continue
+            chunk_user_msg = self._build_chunk_user_message(node, chunk, language)
+            try:
+                chunk_summary = await self._client.chat(
+                    system=_CHUNK_SYSTEM_PROMPT, user=chunk_user_msg
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "summarizer chunk failed for %s chunk %d: %s",
+                    node.id, chunk.index, exc,
+                )
+                chunk_summary = ""
+            chunk_summary = chunk_summary.strip()
+            if chunk_summary:
+                self._cache.put(ckey, chunk_summary)
+            chunk_summaries.append((chunk, chunk_summary))
+
+        # Reduce: build a user message that carries chunk summaries in
+        # place of raw source. Keep the existing child-summaries block so
+        # any already-summarized contains-children still flow through.
+        reduced_msg = self._build_reduced_user_message(
+            store, node, chunk_summaries
+        )
+        try:
+            summary = await self._client.chat(system=prompt_text, user=reduced_msg)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("summarizer reduce failed for %s: %s", node.id, exc)
+            return 0
+        summary = summary.strip()
+        store.update_node(node.id, llm_summary=summary)
+        self._cache.put(cache_key, summary)
+        return 1
+
+    def _build_chunk_user_message(
+        self, node: KGNode, chunk: Chunk, language: str | None
+    ) -> str:
+        """User message for summarizing one chunk of an oversized node."""
+        header = [
+            "# Chunk",
+            f"- parent node: `{node.id}` ({node.kind} `{node.name}`)",
+            f"- chunk index: {chunk.index}",
+            f"- lines: {chunk.start_line}-{chunk.end_line}",
+        ]
+        if chunk.boundary_symbols:
+            header.append(f"- contained symbols: {', '.join(chunk.boundary_symbols)}")
+        lang_tag = language or ""
+        header.append(f"\n## Source\n```{lang_tag}\n{chunk.content}\n```")
+        return "\n".join(header)
+
+    def _build_reduced_user_message(
+        self,
+        store: KGStore,
+        node: KGNode,
+        chunk_summaries: list[tuple[Chunk, str]],
+    ) -> str:
+        """User message for the reduce step — node kind prompt + chunk summaries.
+
+        Mirrors ``_build_user_message`` but swaps the raw source block for
+        a bullet list of chunk summaries. The kind prompt (paragraph.md /
+        program.md / etc.) produces a normal summary because — from its
+        perspective — it's just reading children's distillations, which
+        is the same shape it handles for parent nodes elsewhere.
+        """
+        lines: list[str] = []
+        lines.append("# Node\n")
+        lines.append(f"- id: `{node.id}`")
+        lines.append(f"- kind: `{node.kind}`")
+        lines.append(f"- name: `{node.name}`")
+        if node.span is not None:
+            lines.append(
+                f"- span: `{node.span.file}:{node.span.start_line}-{node.span.end_line}`"
+            )
+        for k, v in sorted(node.attributes.items()):
+            lines.append(f"- {k}: `{v}`")
+
+        lines.append(
+            "\n> This node's raw source exceeded the input-token budget\n"
+            "> and was summarized via semantic chunks below. Treat these\n"
+            "> chunk summaries as authoritative — they fully cover the\n"
+            "> source that WOULD have been inlined here."
+        )
+
+        lines.append("\n## Chunk summaries")
+        for chunk, summary in chunk_summaries:
+            span = f"lines {chunk.start_line}-{chunk.end_line}"
+            symbols = (
+                f" ({', '.join(chunk.boundary_symbols)})"
+                if chunk.boundary_symbols else ""
+            )
+            body = summary or "(chunk summary unavailable)"
+            lines.append(f"- **chunk {chunk.index}, {span}{symbols}**: {body}")
+
+        children = store.neighbors(
+            node.id, direction="out", edge_kinds=self._traverse_edges
+        )
+        summarized_children = [c for c in children if c.llm_summary]
+        if summarized_children:
+            lines.append("\n## Child summaries")
+            for child in summarized_children:
+                lines.append(f"- **{child.kind} `{child.name}`**: {child.llm_summary}")
+        return "\n".join(lines)
+
+    def _language_of(self, node: KGNode) -> str | None:
+        """Resolve the language for chunking.
+
+        Priority: explicit ``attributes["language"]`` > span-file suffix >
+        None (chunker will default). The polyglot adapters set language
+        on the program node; paragraphs inherit via the file suffix.
+        """
+        lang = node.attributes.get("language")
+        if lang:
+            return lang
+        if node.span is not None:
+            from pathlib import Path as _P
+
+            suffix = _P(node.span.file).suffix.lower()
+            if suffix in _LANG_BY_SUFFIX:
+                return _LANG_BY_SUFFIX[suffix]
+        return None
 
     # -- Prompt loading --------------------------------------------------- #
 

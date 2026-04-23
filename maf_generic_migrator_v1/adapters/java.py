@@ -3,11 +3,17 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from maf_generic_migrator_v1.platform_core.ir import Import, ServiceCall, UnitIR
 
+from ._kg_builder import build_kg_from_ir
 from ._tree_sitter_utils import find_nodes_by_type, line_of, node_text, parse
 from .base import LanguageAdapter
+from .node import _default_aws_resolver
+
+if TYPE_CHECKING:
+    from maf_generic_migrator_v1.platform_core.kg import KGStore
 
 _IMPORT_RX = re.compile(r"^\s*import\s+(?:static\s+)?([\w.*]+)\s*;", re.MULTILINE)
 _AWS_SDK_BUILDER_RX = re.compile(r"""(\w+Client)\.builder\(\)""")
@@ -49,6 +55,10 @@ class JavaAdapter(LanguageAdapter):
             loc=loc,
             byte_size=byte_size,
         )
+
+    def extract_kg(self, repo_root: Path, unit_root: Path, store: "KGStore") -> None:
+        ir = self.extract_unit(repo_root, unit_root)
+        build_kg_from_ir(ir, store, resolve_call=_default_aws_resolver())
 
     def _ts_extract(self, root, src: bytes, rel, imports, service_calls) -> None:  # noqa: ANN001
         # Imports
